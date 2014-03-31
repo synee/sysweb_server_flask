@@ -14,6 +14,7 @@ def login_required():
                     "message": "login required."
                 })
             return f(*args, **kwargs)
+
         return decorated_function
 
     return wrapper
@@ -174,6 +175,11 @@ def mkdir():
 @login_required()
 @check_path(exists=["path"])
 def rm():
+    if get_abs_path(get_path()) == "__sys.js":
+        return jsonify(**{
+            "error": True,
+            "message": "This file cannot be removed."
+        })
     if os.path.isdir(get_path()):
         os.removedirs(get_path())
     elif os.path.isfile(get_path()):
@@ -211,6 +217,12 @@ def cp():
 @login_required()
 @check_path(exists=["source"], not_exists=["dest"])
 def mv():
+    if get_abs_path(get_path("source")) == "__sys.js":
+        return jsonify(**{
+            "error": True,
+            "message": "This file cannot be removed."
+        })
+
     shutil.move(get_path("source"), get_path("dest"))
     return jsonify(**{
         "source": file_2_info(get_path("source")),

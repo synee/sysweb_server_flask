@@ -123,8 +123,8 @@ def active():
         session["root"] = SYS_ROOT + "/" + u.username + "/"
         if not os.path.isdir(session["root"]):
             os.mkdir(session["root"])
-            f = open(os.path.join(session["root"], "__sys.js"), "w")
-            f.close()
+        if not os.path.exists(os.path.join(session["root"], "__sys.js")):
+            open(os.path.join(session["root"], "__sys.js"), "w")
         return redirect("")
     return resp + "\n" + ("%d : %s , %r" % (int(uid), str(code), u.enable))
 
