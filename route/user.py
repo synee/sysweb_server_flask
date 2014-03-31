@@ -11,16 +11,11 @@ from orm.user import User
 from sysweb_server_flask import app, SYS_ROOT
 
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if "current_user" in session:
-        return jsonify(**{"user": session["current_user"]})
     if request.method == "GET":
         return render_template("login.html")
     if request.method == "POST":
-        if "current_user" in session:
-            return jsonify(**session["current_user"].__dict__)
         u = User.login(request.form.get("email"), request.form.get("password"))
         if u is not None:
             session["email"] = request.form.get("email")
@@ -55,6 +50,7 @@ def register():
                 "message": "you have registered."
             })
         import smtplib
+
         email = request.form.get("email")
         password = request.form.get("password")
 
@@ -127,6 +123,7 @@ def active():
             open(os.path.join(session["root"], "__sys.js"), "w")
         return redirect("")
     return resp + "\n" + ("%d : %s , %r" % (int(uid), str(code), u.enable))
+
 
 @app.route("/user/current", methods=["GET", "POST"])
 def current():
