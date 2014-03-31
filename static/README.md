@@ -149,8 +149,12 @@ Sysweb
 - add commands
     * example 1
 
+        ``` shell
+        export /app.js
+        ```
+
         ``` javascript
-        Terminal.addCommandFunction("export", function(line, args, path) {
+        Terminal.addCommandFunction("export", function(line, args, path) { # line == export /app.js, args == ["/app.js"], path == args[0] == "/app.js"
           var self,
             _this = this;
           self = this;
@@ -186,8 +190,12 @@ Sysweb
 
     * example 2
 
+        ``` shell
+        register -e one@example.com -p passwd
+        ```
+
         ``` javascript
-        Terminal.addCommandFunction("register", function(line, args) {
+        Terminal.addCommandFunction("register", function(line, args) { # line == "register -e one@example.com -p passwd", args == ["-e", "one@example.com", "-p", "passwd"]
           var email, password, self;
           self = this;
           email = this.getParam("-e");
