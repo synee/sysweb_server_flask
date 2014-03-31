@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="Generated files" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/static/script/Library/corelib.js" />
+        <item url="file://$PROJECT_DIR$/static/sys_root/th.synee@gmail.com/terminal.js" />
+        <item url="file://$PROJECT_DIR$/static/sys_root/th.synee@gmail.com/__sys.js" />
+        <item url="file://$PROJECT_DIR$/static/script/Applications/terminal.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/static/script/Library/corelib.js" />
+      <root url="file://$PROJECT_DIR$/static/sys_root/th.synee@gmail.com/terminal.js" />
+      <root url="file://$PROJECT_DIR$/static/sys_root/th.synee@gmail.com/__sys.js" />
+      <root url="file://$PROJECT_DIR$/static/script/Applications/terminal.js" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>
