@@ -1,1 +1,0 @@
- console.log("Hello Write") __sys.coffee __sys.coffee
