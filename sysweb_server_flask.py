@@ -27,5 +27,5 @@ from route.user import *
 
 if __name__ == '__main__':
     # print(BASE_DIR)
-    app.run(debug=True)
+    app.run(debug=True, host="218.244.142.149")
 
