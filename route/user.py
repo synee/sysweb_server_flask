@@ -65,7 +65,7 @@ def register():
         u = User(email=email,
                  username=email,
                  password=User.encrypt(password),
-                 code=base64.urlsafe_b64decode(User.encrypt(email + password)))
+                 code=User.encrypt("%s code %s" % (email, password)))
         u.save()
 
         if hasattr(u, u.Meta.primary):

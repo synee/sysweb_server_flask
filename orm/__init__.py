@@ -75,7 +75,6 @@ def execute_fetch_one(sql, *args, **kwargs):
 def execute_update(sql, *args, **kwargs):
     db = MySQLdb.Connect(MYSQL_DATABASE_HOST, MYSQL_DATABASE_USER, MYSQL_DATABASE_PASSWORD, MYSQL_DATABASE_DB)
     cursor = db.cursor()
-    result = None
     result = cursor.execute(sql)
     db.commit()
     db.rollback()

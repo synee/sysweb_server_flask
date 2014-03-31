@@ -27,7 +27,7 @@ class User(Model):
     @classmethod
     def encrypt(cls, password):
         md5 = hashlib.md5()
-        md5.update("password")
+        md5.update(password)
         p = base64.urlsafe_b64encode(md5.hexdigest())
         return p
 
