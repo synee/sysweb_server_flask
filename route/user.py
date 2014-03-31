@@ -80,7 +80,7 @@ def register():
                     to active your account.
                     <br>
                     Your password: %s
-                    """ % ("sys.abillist.com", u.m_id, u.code, "sys.abillist.com", u.m_id, u.code, password)
+                    """ % ("sys.abillist.com", str(u.m_id), u.code, "sys.abillist.com", str(u.m_id), u.code, password)
             message = "\r\n".join([
                 "From: " + sender,
                 "MIME-Version: 1.0",

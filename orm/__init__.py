@@ -137,7 +137,7 @@ class Model:
 
     @property
     def m_id(self):
-        self.__dict__.get(self.Meta.primary)
+        return self.__dict__.get(self.Meta.primary)
 
 
     def save(self):
