@@ -1,9 +1,9 @@
 import MySQLdb
 from datetime import datetime
 
-MYSQL_DATABASE_HOST = "localhost"
+MYSQL_DATABASE_HOST = "218.244.142.149"
 MYSQL_DATABASE_USER = "root"
-MYSQL_DATABASE_PASSWORD = "root"
+MYSQL_DATABASE_PASSWORD = "sysweb_pwd"
 MYSQL_DATABASE_DB = "sysweb"
 
 field_type = {
