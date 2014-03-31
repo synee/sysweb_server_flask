@@ -154,7 +154,7 @@ Sysweb
         ```
 
         ``` javascript
-        Terminal.addCommandFunction("export", function(line, args, path) { # line == export /app.js, args == ["/app.js"], path == args[0] == "/app.js"
+        Terminal.addCommandFunction("export", function(line, args, path) { // line == export /app.js, args == ["/app.js"], path == args[0] == "/app.js"
           var self,
             _this = this;
           self = this;
@@ -195,7 +195,7 @@ Sysweb
         ```
 
         ``` javascript
-        Terminal.addCommandFunction("register", function(line, args) { # line == "register -e one@example.com -p passwd", args == ["-e", "one@example.com", "-p", "passwd"]
+        Terminal.addCommandFunction("register", function(line, args) { // line == "register -e one@example.com -p passwd", args == ["-e", "one@example.com", "-p", "passwd"]
           var email, password, self;
           self = this;
           email = this.getParam("-e");
