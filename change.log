@@ -1,0 +1,49 @@
+beta 0.2
+
+new api
+    publish
+    install
+
+new command
+    publish
+    install
+    search
+
+refactor env
+    export
+    export delete
+
+
+
+beta 0.1
+
+new Events
+    - on
+    - once
+    - unon
+    - trigger
+
+new fs
+    - cd
+    - ls
+    - cp
+    - mv
+    - mkdir
+    - touch
+    - echo
+    - append
+    - write
+    - read
+    - head
+    - tail
+
+new user
+    - login
+    - register
+    - active
+    - current
+
+new KeyBoardMaps
+    - register
+    - get
+    - remove

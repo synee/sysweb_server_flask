@@ -175,7 +175,7 @@ def mkdir():
 @login_required()
 @check_path(exists=["path"])
 def rm():
-    if get_abs_path(get_path()) == "__sys.js":
+    if get_abs_path(get_path()) == "__env__.json":
         return jsonify(**{
             "error": True,
             "message": "This file cannot be removed."
@@ -217,7 +217,7 @@ def cp():
 @login_required()
 @check_path(exists=["source"], not_exists=["dest"])
 def mv():
-    if get_abs_path(get_path("source")) == "__sys.js":
+    if get_abs_path(get_path("source")) == "__env__.json":
         return jsonify(**{
             "error": True,
             "message": "This file cannot be removed."
@@ -249,4 +249,22 @@ def tail():
     f_info["text"] = "".join(f.readlines()[-10:])
     return jsonify(**f_info)
 
+
+@app.route("/api/store/publish", methods=["POST"])
+@login_required()
+@check_path(is_file=["path"])
+def store_publish():
+    pass
+
+
+@app.route("/api/store/search", methods=["POST"])
+@login_required()
+def store_search():
+    pass
+
+
+@app.route("/api/store/publish", methods=["POST"])
+@login_required()
+def store_install():
+    pass
 

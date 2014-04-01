@@ -1,6 +1,7 @@
 $ ()->
+    VERSION = "BETA 0.2"
 
-#    keymap
+    #    keymap
     (->
         keyStack = []
         q = {
@@ -141,7 +142,7 @@ $ ()->
     window.Sysweb = window.Sysweb || (->
         new _Sys())()
 
-    fs = Sysweb.fs = (->
+    Sysweb.fs = (->
         resultHandler = (result)->
             if(result.error)
                 newfs.trigger("fserror", arguments)
@@ -260,34 +261,6 @@ $ ()->
 
         newfs)()
 
-    Sysweb.Memory = (->
-        _Memory = _Sys.extend({})
-        new _Memory())()
-
-    Sysweb.Library = (->
-        _Library = _Sys.extend({
-            initialize: ->
-        })
-        new _Library())()
-
-    window.Sysweb.Environment = (->
-        _Environment = _Sys.extend({
-            initialize: ->
-                @_envs = {}
-            set: (name, value)->
-                @_envs[name] = value
-            get: (name)->
-                @_envs[name]
-            addBoot: (tag, path, attr, attrs = '')->
-                $.post("/boot", {
-                    tag: tag
-                    path: path
-                    attr: attr
-                    attrs: attrs
-                })
-        })
-        new _Environment())()
-
     window.Sysweb.Applications = (->
         _Apps = _Sys.extend({
             AppClass: Events.extend({})
@@ -302,14 +275,79 @@ $ ()->
         })
         new _Apps())()
 
-    window.Sysweb.User = (->
+    Sysweb.Env = (->
+        _Env = _Sys.extend({
+            ENV_FILE: "/__env__.json"
+            initEnv: ()->
+                @loadEnv((env)=>
+                    if env.exports
+                        @loadExports(env.exports)
+                ).fail((err)=>
+                    if err.status == 404
+                        Sysweb.fs.touch(@ENV_FILE).done(=>
+                            @saveEnv({
+                                exports: [
+                                    "/__sys.js"
+                                ],
+                                variables: {},
+                                version: VERSION
+                            }, =>
+                                @loadEnv())
+                        )
+                )
+
+            export: (path, success=->)->
+                @loadEnv((env)=>
+                    console.log(env.exports)
+                    if env.exports.indexOf(path) == -1
+                        env.exports.push(path)
+                        @saveEnv(env, success)
+                )
+
+            deleteExport: (path, success=->)->
+                @loadEnv((env)=>
+                    if env.exports.indexOf(path) >0
+                        env.exports = env.exports.filter((p)->
+                            p != path
+                        )
+                        @saveEnv(env, success)
+                )
+
+
+
+            loadExports: (exports)->
+                for ex in exports
+                    document.getElementsByTagName('head')[0]
+                            .appendChild(document.createElement('script'))
+                            .setAttribute('src', "/sys_root/#{Sysweb.User.currentUser.username}/#{ex}".replace("//", "/"));
+
+
+            loadEnv: (envcb = (env)->)->
+                $.get("/sys_root/#{Sysweb.User.currentUser.username}#{@ENV_FILE}").done((env)=>
+                    @env = env
+                    if @env.VERSION != VERSION
+                        @env.VERSION = VERSION
+                        @saveEnv(@env)
+                    envcb(env)
+                )
+
+            saveEnv: (env, success = (->), error = (->))->
+                Sysweb.fs.write(@ENV_FILE, JSON.stringify(env)).done(=>
+                    @env = env
+                    success()
+                ).fail(=>
+                    fail()
+                )
+        })
+        new _Env())()
+
+    Sysweb.User = (->
         _User = _Sys.extend({
             initialize: ->
                 self = @
                 @fetch().done (response)->
                     if response.user
-                        document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).setAttribute('src',
-                            "/sys_root/#{Sysweb.User.currentUser.username}/__sys.js");
+                        Sysweb.Env.initEnv()
 
                 $(document).on "ajaxerror", (docevent, event, request, settings)->
                     if(request.status == 403)
@@ -345,6 +383,15 @@ $ ()->
                 )
         })
         new _User())()
+
+    Sysweb.Api = (->
+        _Api = Events.extend({
+            publish: (path, appName, version) ->
+                console.log(version)
+            install: (appName, version) ->
+                console.log(version)
+        })
+        new _Api)()
 
 
 

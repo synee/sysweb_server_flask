@@ -257,7 +257,7 @@ $(()->
                     self.goon()
             )
 
-        stat: (line, args, path=@currentDir)->
+        stat: (line, args, path = @currentDir)->
             self = @
             fs.stat(@getOpreatePath(path)).done((result)->
                 $table = $("<table/>")
@@ -453,28 +453,25 @@ $(()->
         window.open("https://github.com/synee/sysweb_server_flask/blob/master/static/README.md", "_blank")
         @goon()
 
-    Terminal.addCommandFunction "export", (line, args, path)->
+    Terminal.addCommandFunction "export", (line, args, path, option)->
         self = @
         if !path
             @outputError("Missing path")
             return
         path = @getOpreatePath(path)
         Sysweb.fs.stat(path).done((result)=>
-            if result.error or !result.file
-                @outputError("#{path} should be a file")
-                return @goon()
-            if path == "/__sys.js"
-                @outputError("Can not export /__sys.js")
+            if result.absolutePath
+                if option == "delete"
+                    Sysweb.Env.deleteExport(result.absolutePath, =>
+                        @output("Export delete success")
+                        @goon())
+                else
+                    Sysweb.Env.export(result.absolutePath, =>
+                        @output("Export success")
+                        @goon())
+            else
+                @outputError("No Such File")
                 @goon()
-                return
-
-            newScript = "document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).setAttribute('src', '/sys_root/#{Sysweb.User.currentUser.username}#{path}');"
-            Sysweb.fs.read("/__sys.js").done (result)->
-                text = result.text
-                text = text.replace(newScript, "")
-                text += "\n" + newScript;
-                Sysweb.fs.write("/__sys.js", text).done ()->
-                    self.goon()
         )
 
     Terminal.addCommandFunction "commands", (line, args) ->
@@ -482,6 +479,18 @@ $(()->
         @output($ul)
         for command in Terminal.commands
             $ul.append($("<li style='float: left; padding-right: 20px;'>#{command}</li>"))
+        @goon()
+
+
+    Terminal.addCommandFunction "publish", (line, args, path, as, version = 0) ->
+        Sysweb.Api.publish(path, as, version)
+        @outputError("Not Finished")
+        @goon()
+
+
+    Terminal.addCommandFunction "install", (line, args, app, version = 0) ->
+        Sysweb.Api.install(app, version)
+        @outputError("Not Finished")
         @goon()
 
 )

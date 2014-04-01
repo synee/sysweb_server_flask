@@ -546,7 +546,7 @@
       window.open("https://github.com/synee/sysweb_server_flask/blob/master/static/README.md", "_blank");
       return this.goon();
     });
-    Terminal.addCommandFunction("export", function(line, args, path) {
+    Terminal.addCommandFunction("export", function(line, args, path, option) {
       var self,
         _this = this;
       self = this;
@@ -556,29 +556,25 @@
       }
       path = this.getOpreatePath(path);
       return Sysweb.fs.stat(path).done(function(result) {
-        var newScript;
-        if (result.error || !result.file) {
-          _this.outputError("" + path + " should be a file");
+        if (result.absolutePath) {
+          if (option === "delete") {
+            return Sysweb.Env.deleteExport(result.absolutePath, function() {
+              _this.output("Export delete success");
+              return _this.goon();
+            });
+          } else {
+            return Sysweb.Env["export"](result.absolutePath, function() {
+              _this.output("Export success");
+              return _this.goon();
+            });
+          }
+        } else {
+          _this.outputError("No Such File");
           return _this.goon();
         }
-        if (path === "/__sys.js") {
-          _this.outputError("Can not export /__sys.js");
-          _this.goon();
-          return;
-        }
-        newScript = "document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).setAttribute('src', '/sys_root/" + Sysweb.User.currentUser.username + path + "');";
-        return Sysweb.fs.read("/__sys.js").done(function(result) {
-          var text;
-          text = result.text;
-          text = text.replace(newScript, "");
-          text += "\n" + newScript;
-          return Sysweb.fs.write("/__sys.js", text).done(function() {
-            return self.goon();
-          });
-        });
       });
     });
-    return Terminal.addCommandFunction("commands", function(line, args) {
+    Terminal.addCommandFunction("commands", function(line, args) {
       var $ul, command, _i, _len, _ref;
       $ul = $("<ul style='list-style-type: none; display: table;'/>");
       this.output($ul);
@@ -587,6 +583,22 @@
         command = _ref[_i];
         $ul.append($("<li style='float: left; padding-right: 20px;'>" + command + "</li>"));
       }
+      return this.goon();
+    });
+    Terminal.addCommandFunction("publish", function(line, args, path, as, version) {
+      if (version == null) {
+        version = 0;
+      }
+      Sysweb.Api.publish(path, as, version);
+      this.outputError("Not Finished");
+      return this.goon();
+    });
+    return Terminal.addCommandFunction("install", function(line, args, app, version) {
+      if (version == null) {
+        version = 0;
+      }
+      Sysweb.Api.install(app, version);
+      this.outputError("Not Finished");
       return this.goon();
     });
   });
