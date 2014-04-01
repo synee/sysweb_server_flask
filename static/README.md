@@ -149,6 +149,7 @@ Sysweb
 - add commands
     * example 1
 
+        commands
         ``` shell
         export /app.js
         ```
@@ -190,6 +191,7 @@ Sysweb
 
     * example 2
 
+        commands
         ``` shell
         register -e one@example.com -p passwd
         ```
