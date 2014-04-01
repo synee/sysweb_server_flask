@@ -543,7 +543,7 @@
       return this.goon();
     });
     Terminal.addCommandFunction("help", function(line, args) {
-      window.open("/README.md", "_blank");
+      window.open("https://github.com/synee/sysweb_server_flask/blob/master/static/README.md", "_blank");
       return this.goon();
     });
     Terminal.addCommandFunction("export", function(line, args, path) {

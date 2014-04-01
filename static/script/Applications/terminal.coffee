@@ -450,7 +450,7 @@ $(()->
         @goon()
 
     Terminal.addCommandFunction "help", (line, args)->
-        window.open("/README.md", "_blank")
+        window.open("https://github.com/synee/sysweb_server_flask/blob/master/static/README.md", "_blank")
         @goon()
 
     Terminal.addCommandFunction "export", (line, args, path)->
