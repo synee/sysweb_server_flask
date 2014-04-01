@@ -543,7 +543,7 @@
       return this.goon();
     });
     Terminal.addCommandFunction("help", function(line, args) {
-      window.open("/help.html", "_blank");
+      window.open("/README.md", "_blank");
       return this.goon();
     });
     Terminal.addCommandFunction("export", function(line, args, path) {

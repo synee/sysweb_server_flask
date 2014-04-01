@@ -450,7 +450,7 @@ $(()->
         @goon()
 
     Terminal.addCommandFunction "help", (line, args)->
-        window.open("/help.html", "_blank")
+        window.open("/README.md", "_blank")
         @goon()
 
     Terminal.addCommandFunction "export", (line, args, path)->
