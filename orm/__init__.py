@@ -6,7 +6,6 @@ MYSQL_DATABASE_USER = None
 MYSQL_DATABASE_PASSWORD = None
 MYSQL_DATABASE_DB = None
 
-
 FIELD_TYPE = {
     0: 'DECIMAL',
     1: 'TINY',
@@ -65,11 +64,11 @@ def execute_fetch_one(sql, *args, **kwargs):
     field_descriptions = cursor.description
     row = cursor.fetchone()
     for cell in row:
-            field_description = field_descriptions[row.index(cell)]
-            if field_description[1] == 1:
-                row_result[field_description[0]] = not not cell
-            else:
-                row_result[field_description[0]] = cell
+        field_description = field_descriptions[row.index(cell)]
+        if field_description[1] == 1:
+            row_result[field_description[0]] = not not cell
+        else:
+            row_result[field_description[0]] = cell
     return row_result
 
 
@@ -101,6 +100,7 @@ def gen_condition(k, v):
     if v is None:
         condition = "%s IS NULL" % (k, )
     return condition
+
 
 def gen_update_condition(k, v):
     condition = None
@@ -139,11 +139,11 @@ class Model:
     def m_id(self):
         return self.__dict__.get(self.Meta.primary)
 
-
     def save(self):
         if hasattr(self, self.Meta.primary):
             sql = "UPDATE %s SET %s WHERE %s=%d" % (self.Meta.table,
-                                                    ", ".join([gen_update_condition(k, self.__dict__.get(k)) for k in self.__dict__.keys()]),
+                                                    ", ".join([gen_update_condition(k, self.__dict__.get(k)) for k in
+                                                               self.__dict__.keys()]),
                                                     self.Meta.primary,
                                                     self.__dict__[self.Meta.primary])
             result = execute_update(sql)
