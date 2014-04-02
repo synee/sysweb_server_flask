@@ -422,7 +422,7 @@ $(()->
             @goon()
 
     Terminal.addCommandFunction "logout", ()->
-        $.get("logout").done(=>
+        $.get("/logout").done(=>
             window.location.reload()
         ).fail(=>
             @goon()

@@ -512,7 +512,7 @@
     });
     Terminal.addCommandFunction("logout", function() {
       var _this = this;
-      return $.get("logout").done(function() {
+      return $.get("/logout").done(function() {
         return window.location.reload();
       }).fail(function() {
         return _this.goon();

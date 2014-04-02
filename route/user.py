@@ -35,7 +35,9 @@ def logout():
     session.pop("current_user", None)
     session.pop("email", None)
     session.pop("root", None)
-    return redirect(url_for("login"))
+    return jsonify(**{
+        "success": True
+    })
 
 
 @app.route("/register", methods=["GET", "POST"])
