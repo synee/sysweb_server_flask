@@ -61,7 +61,8 @@ $ ()->
         $(document).on("keyup", (e)->
             keyStack = []
             return false
-        ))()
+        )
+    )()
 
     $(document).ajaxError((event, request, settings)->
         $(document).trigger("ajaxerror", [event, request, settings]))
