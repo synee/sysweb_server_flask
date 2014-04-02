@@ -1,12 +1,12 @@
 import MySQLdb
 from datetime import datetime
 
-MYSQL_DATABASE_HOST = "localhost"
-MYSQL_DATABASE_USER = "user"
-MYSQL_DATABASE_PASSWORD = "pwd"
-MYSQL_DATABASE_DB = "test"
+MYSQL_DATABASE_HOST = None
+MYSQL_DATABASE_USER = None
+MYSQL_DATABASE_PASSWORD = None
+MYSQL_DATABASE_DB = None
 
-field_type = {
+FIELD_TYPE = {
     0: 'DECIMAL',
     1: 'TINY',
     2: 'SHORT',
