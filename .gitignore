@@ -3,3 +3,5 @@
 *.xml
 
 static/sys_root
+
+*.pyc
