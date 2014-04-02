@@ -175,7 +175,7 @@ def mkdir():
 @login_required()
 @check_path(exists=["path"])
 def rm():
-    if get_abs_path(get_path()) == "__env__.json":
+    if get_abs_path(get_path()) == "/__env__.json":
         return jsonify(**{
             "error": True,
             "message": "This file cannot be removed."
@@ -217,7 +217,7 @@ def cp():
 @login_required()
 @check_path(exists=["source"], not_exists=["dest"])
 def mv():
-    if get_abs_path(get_path("source")) == "__env__.json":
+    if get_abs_path(get_path("source")) == "/__env__.json":
         return jsonify(**{
             "error": True,
             "message": "This file cannot be removed."
