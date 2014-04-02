@@ -459,16 +459,18 @@ $(()->
             @outputError("Missing path")
             return
         path = @getOpreatePath(path)
+
+        if option == "delete"
+            Sysweb.Env.deleteExport(path, =>
+                @output("Export delete success")
+                @goon())
+            return
+
         Sysweb.fs.stat(path).done((result)=>
             if result.absolutePath
-                if option == "delete"
-                    Sysweb.Env.deleteExport(result.absolutePath, =>
-                        @output("Export delete success")
-                        @goon())
-                else
-                    Sysweb.Env.export(result.absolutePath, =>
-                        @output("Export success")
-                        @goon())
+                Sysweb.Env.export(result.absolutePath, =>
+                    @output("Export success")
+                    @goon())
             else
                 @outputError("No Such File")
                 @goon()

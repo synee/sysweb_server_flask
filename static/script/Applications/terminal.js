@@ -555,19 +555,19 @@
         return;
       }
       path = this.getOpreatePath(path);
+      if (option === "delete") {
+        Sysweb.Env.deleteExport(path, function() {
+          _this.output("Export delete success");
+          return _this.goon();
+        });
+        return;
+      }
       return Sysweb.fs.stat(path).done(function(result) {
         if (result.absolutePath) {
-          if (option === "delete") {
-            return Sysweb.Env.deleteExport(result.absolutePath, function() {
-              _this.output("Export delete success");
-              return _this.goon();
-            });
-          } else {
-            return Sysweb.Env["export"](result.absolutePath, function() {
-              _this.output("Export success");
-              return _this.goon();
-            });
-          }
+          return Sysweb.Env["export"](result.absolutePath, function() {
+            _this.output("Export success");
+            return _this.goon();
+          });
         } else {
           _this.outputError("No Such File");
           return _this.goon();
