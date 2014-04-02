@@ -8,6 +8,11 @@ app = Flask(__name__,
             static_folder=STATIC_DIR
 )
 
+import orm
+orm.MYSQL_DATABASE_HOST = "218.244.142.149"
+orm.MYSQL_DATABASE_USER = "root"
+orm.MYSQL_DATABASE_PASSWORD = "sysweb_pwd"
+orm.MYSQL_DATABASE_DB = "sysweb"
 
 SYS_ROOT = os.path.join(STATIC_DIR, "sys_root")
 
@@ -24,8 +29,7 @@ def home():
 from route.fs import *
 from route.user import *
 
-
 if __name__ == '__main__':
     # print(BASE_DIR)
-    app.run(debug=True, host="218.244.142.149")
+    app.run(debug=True)
 
