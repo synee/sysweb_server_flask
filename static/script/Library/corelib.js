@@ -485,12 +485,12 @@
             success = function() {};
           }
           return this.loadEnv(function(env) {
-            if (env.exports.indexOf(path) > 0) {
+            if (env.exports.indexOf(path) >= 0) {
               env.exports = env.exports.filter(function(p) {
                 return p !== path;
               });
-              return _this.saveEnv(env, success);
             }
+            return _this.saveEnv(env, success);
           });
         },
         loadExports: function(exports) {

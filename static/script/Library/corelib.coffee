@@ -306,11 +306,11 @@ $ ()->
 
             deleteExport: (path, success=->)->
                 @loadEnv((env)=>
-                    if env.exports.indexOf(path) >0
+                    if env.exports.indexOf(path) >= 0
                         env.exports = env.exports.filter((p)->
                             p != path
                         )
-                        @saveEnv(env, success)
+                    @saveEnv(env, success)
                 )
 
 
