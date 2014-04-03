@@ -61,8 +61,7 @@ $ ()->
         $(document).on("keyup", (e)->
             keyStack = []
             return false
-        )
-    )()
+        ))()
 
     $(document).ajaxError((event, request, settings)->
         $(document).trigger("ajaxerror", [event, request, settings]))
@@ -283,6 +282,44 @@ $ ()->
                 @loadEnv((env)=>
                     if env.exports
                         @loadExports(env.exports)
+                )
+
+            export: (path, success = ->)->
+                @loadEnv((env)=>
+                    console.log(env.exports)
+                    if env.exports.indexOf(path) == -1
+                        env.exports.push(path)
+                        @saveEnv(env, success)
+                )
+
+            deleteExport: (path, success = ->)->
+                @loadEnv((env)=>
+                    if env.exports.indexOf(path) >= 0
+                        env.exports = env.exports.filter((p)->
+                            p != path
+                        )
+                    @saveEnv(env, success)
+                )
+
+            loadExports: (exports = @exports)->
+                if !exports
+                    @loadEnv(=>
+                        @loadExports())
+                    return
+                for ex in exports
+                    document.getElementsByTagName('head')[0]
+                    .appendChild(document.createElement('script'))
+                    .setAttribute('src', "/sys_root/#{Sysweb.User.currentUser.username}/#{ex}".replace("//", "/"));
+
+
+            loadEnv: (envcb = (env)->)->
+                $.get("/sys_root/#{Sysweb.User.currentUser.username}#{@ENV_FILE}").done((env)=>
+                    @env = env
+                    @exports = env.exports
+                    if @env.VERSION != VERSION
+                        @env.VERSION = VERSION
+                        @saveEnv(@env)
+                    envcb(env)
                 ).fail((err)=>
                     if err.status == 404
                         Sysweb.fs.touch(@ENV_FILE).done(=>
@@ -293,43 +330,8 @@ $ ()->
                                 variables: {},
                                 version: VERSION
                             }, =>
-                                @loadEnv())
+                                @loadEnv(envcb))
                         )
-                )
-
-            export: (path, success=->)->
-                @loadEnv((env)=>
-                    console.log(env.exports)
-                    if env.exports.indexOf(path) == -1
-                        env.exports.push(path)
-                        @saveEnv(env, success)
-                )
-
-            deleteExport: (path, success=->)->
-                @loadEnv((env)=>
-                    if env.exports.indexOf(path) >= 0
-                        env.exports = env.exports.filter((p)->
-                            p != path
-                        )
-                    @saveEnv(env, success)
-                )
-
-
-
-            loadExports: (exports)->
-                for ex in exports
-                    document.getElementsByTagName('head')[0]
-                            .appendChild(document.createElement('script'))
-                            .setAttribute('src', "/sys_root/#{Sysweb.User.currentUser.username}/#{ex}".replace("//", "/"));
-
-
-            loadEnv: (envcb = (env)->)->
-                $.get("/sys_root/#{Sysweb.User.currentUser.username}#{@ENV_FILE}").done((env)=>
-                    @env = env
-                    if @env.VERSION != VERSION
-                        @env.VERSION = VERSION
-                        @saveEnv(@env)
-                    envcb(env)
                 )
 
             saveEnv: (env, success = (->), error = (->))->

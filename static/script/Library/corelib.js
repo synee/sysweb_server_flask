@@ -452,18 +452,6 @@
             if (env.exports) {
               return _this.loadExports(env.exports);
             }
-          }).fail(function(err) {
-            if (err.status === 404) {
-              return Sysweb.fs.touch(_this.ENV_FILE).done(function() {
-                return _this.saveEnv({
-                  exports: ["/__sys.js"],
-                  variables: {},
-                  version: VERSION
-                }, function() {
-                  return _this.loadEnv();
-                });
-              });
-            }
           });
         },
         "export": function(path, success) {
@@ -494,7 +482,17 @@
           });
         },
         loadExports: function(exports) {
-          var ex, _i, _len, _results;
+          var ex, _i, _len, _results,
+            _this = this;
+          if (exports == null) {
+            exports = this.exports;
+          }
+          if (!exports) {
+            this.loadEnv(function() {
+              return _this.loadExports();
+            });
+            return;
+          }
           _results = [];
           for (_i = 0, _len = exports.length; _i < _len; _i++) {
             ex = exports[_i];
@@ -509,11 +507,24 @@
           }
           return $.get("/sys_root/" + Sysweb.User.currentUser.username + this.ENV_FILE).done(function(env) {
             _this.env = env;
+            _this.exports = env.exports;
             if (_this.env.VERSION !== VERSION) {
               _this.env.VERSION = VERSION;
               _this.saveEnv(_this.env);
             }
             return envcb(env);
+          }).fail(function(err) {
+            if (err.status === 404) {
+              return Sysweb.fs.touch(_this.ENV_FILE).done(function() {
+                return _this.saveEnv({
+                  exports: ["/__sys.js"],
+                  variables: {},
+                  version: VERSION
+                }, function() {
+                  return _this.loadEnv(envcb);
+                });
+              });
+            }
           });
         },
         saveEnv: function(env, success, error) {

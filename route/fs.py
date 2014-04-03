@@ -3,6 +3,9 @@ import os, shutil
 from flask import request, session, jsonify
 from sysweb_server_flask import app
 
+BASE_FILE = ("/__env__.json",
+             "/Applications")
+
 
 def login_required():
     def wrapper(f):
@@ -175,10 +178,10 @@ def mkdir():
 @login_required()
 @check_path(exists=["path"])
 def rm():
-    if get_abs_path(get_path()) == "/__env__.json":
+    if get_abs_path(get_path()) in BASE_FILE:
         return jsonify(**{
             "error": True,
-            "message": "This file cannot be removed."
+            "message": "%s cannot be removed." % (get_abs_path(get_path()), )
         })
     if os.path.isdir(get_path()):
         os.removedirs(get_path())
@@ -217,10 +220,10 @@ def cp():
 @login_required()
 @check_path(exists=["source"], not_exists=["dest"])
 def mv():
-    if get_abs_path(get_path("source")) == "/__env__.json":
+    if get_abs_path(get_path("source")) in BASE_FILE:
         return jsonify(**{
             "error": True,
-            "message": "This file cannot be removed."
+            "message": "%s cannot be removed." % (get_abs_path(get_path()), )
         })
 
     shutil.move(get_path("source"), get_path("dest"))

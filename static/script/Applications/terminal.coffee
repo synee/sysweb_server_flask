@@ -1,7 +1,11 @@
 $(()->
-    Applications = window.Sysweb.Applications
-
     Terminal = window.Terminal = Events.extend
+
+    # 已经输入
+        hasInputs: []
+    # 当前输入
+        currentInput: 0
+
         currentDir: "/"
 
         template: """
@@ -14,23 +18,10 @@ $(()->
                     </div>
                   """
         style:
-            position: "fixed"
-            top: 0
-            left: 0
-            width: "100%"
-            height: "100%"
-            padding: "10px"
-            background: "#333"
-            color: "#0fc"
-            overflow: "auto"
+            position: "fixed", top: 0, left: 0, width: "100%", height: "100%", padding: "10px", background: "#333", color: "#0fc", overflow: "auto"
 
         $: (selector)->
             @$el.find.apply(@$el, arguments)
-
-    # 已经输入
-        hasInputs: []
-    # 当前输入
-        currentInput: 0
 
     # 前一个输入
         prevInput: ->
@@ -66,13 +57,12 @@ $(()->
         output: (message = '') ->
             $output = @outputEl(message)
             @$outputBox.append($output)
+            @goon()
             $output
 
     # 输出错误
         outputError: (message = '')->
-            $o = @output()
-            $o.append($("<span style='padding: 5px 20px; color: #f66;'>#{message}</span>"))
-            @goon()
+            @output().append($("<span style='padding: 5px 20px; color: #f66;'>#{message}</span>"))
 
     # 提交命令
         commit: (line = @line = @$input.val())->
@@ -84,8 +74,7 @@ $(()->
             @$input.val("").hide()
             @$("#terminal_path").text("")
             if (!line.trim())
-                @goon()
-                return
+                return @goon()
             @execute(line)
 
     # getParam
@@ -98,16 +87,11 @@ $(()->
 
     # 执行命令
         execute: (line)->
-            self = @
             argArr = line.split(/\s+/)
             fnName = argArr[0]
             fn = (Terminal.commandFunctions)[fnName]
-            if (fn)
-                fn.apply(@, [line, argArr.slice(1)].concat(argArr.slice(1)))
-            else
-                $o = @output()
-                $o.append($("""<span style='padding: 5px 20px; color: #f66;'>No Such command: \" #{fnName} \"</span>"""))
-                self.goon()
+            if (fn) fn.apply(@, [line, argArr.slice(1)].concat(argArr.slice(1)))
+            else @output().append($("""<span style='padding: 5px 20px; color: #f66;'>No Such command: \" #{fnName} \"</span>"""))
 
     # 命令结束， 继续
         goon: ()->
@@ -149,34 +133,26 @@ $(()->
             @goon()
 
         initHotkey: ->
-            self = @
-            KeyBoardMaps.register("ctrl+c", ()->
-                self.commit('')
-                self.goon()
+            KeyBoardMaps.register("ctrl+c", =>
+                @commit('')
+                @goon()
             )
 
         addHotKey: (keyCombe, callback)->
-            self = @
-            KeyBoardMaps.register(keyCombe, ()->
-                callback.apply(self, arguments);
-            )
+            KeyBoardMaps.register(keyCombe, =>
+                callback.apply(@, arguments))
 
 
         initEvents: ->
-            self = @
-            @$el.on("click", ->
-                self.$input.focus())
-            @$input.on("keydown", (e)->
-                self.keyBoardListener(e))
+            @$el.on("click", =>
+                @$input.focus())
+            @$input.on("keydown", (e)=>
+                @keyBoardListener(e))
             Sysweb.User.on("logined", @goon, @)
-            Sysweb.User.on("forbidden", ->
-                @outputError("Command forbidden, you have to log in.")
-                @goon()
-            , @)
-            Sysweb.fs.on("fserror", (result)->
-                self.outputError(result.message)
-                self.goon()
-            )
+            Sysweb.User.on("forbidden", =>
+                @outputError("Command forbidden, you have to log in."))
+            Sysweb.fs.on("fserror", (result)=>
+                @outputError(result.message))
 
         initCommands: ->
 
@@ -189,7 +165,7 @@ $(()->
                 return @nextInput()
 
 
-    Applications.set("terminal", Terminal)
+    Sysweb.Applications.set("terminal", Terminal)
 
     Terminal.getInstance = (args)->
         if (!Terminal.instance)
@@ -201,27 +177,13 @@ $(()->
     # 添加命令
     Terminal.addCommandFunction = (name, fn = (args)->)->
         Terminal.commandFunctions[name] = fn
-        Terminal.commands[Terminal.commands.length] = name
+        Terminal.commandNames = Terminal.commandNames.filter((commandName)->
+            commandName != name)
+        Terminal.commandNames[Terminal.commandNames.length] = name
 
-    Terminal.commands = [
-        "pwd"
-        "cd"
-        "ls"
-        "touch"
-        "stat"
-        "read"
-        "write"
-        "append"
-        "echo"
-        "mkdir"
-        "rm"
-        "cp"
-        "mv"
-        "head"
-        "tail"
-    ]
-
-    fs = Sysweb.fs
+    Terminal.commandNames =
+        [ "pwd", "cd", "ls", "touch", "stat", "read", "write", "append", "echo", "mkdir", "rm", "cp", "mv", "head",
+          "tail"]
 
     # Terminal 命令
     Terminal.commandFunctions =
@@ -232,19 +194,17 @@ $(()->
         cd: (line, args, path = path || '.')->
             self = @
             path = @getOpreatePath(path) + "/"
-            Sysweb.fs.cd(path).done((result)->
+            Sysweb.fs.cd(path).done (result)->
                 if(result.directory)
                     self.currentDir = path
                 self.goon()
-            )
 
         ls: (line, args, path = path || ".")->
             self = @
-            Sysweb.fs.ls(self.getOpreatePath(path)).done((result)->
+            Sysweb.fs.ls(self.getOpreatePath(path)).done (result)->
                 $o = self.output()
                 $o.append($("<span style='padding: 5px 20px; color: #{if item.file then "#f99" else "#99f"}'>#{item.name}</span>")) for item in result.list
                 self.goon()
-            )
 
         touch: (line, args, path = path || ".")->
             self = @
@@ -252,27 +212,20 @@ $(()->
                 @outputError("Missing parameters")
                 return @goon()
             path = self.getOpreatePath(path)
-            Sysweb.fs.touch(path).done((result)->
+            Sysweb.fs.touch(path).done (result)->
                 if(result.exists)
                     self.goon()
-            )
 
         stat: (line, args, path = @currentDir)->
-            self = @
-            fs.stat(@getOpreatePath(path)).done((result)->
+            Sysweb.fs.stat(@getOpreatePath(path)).done (result)=>
                 $table = $("<table/>")
-                self.output($table)
+                @output($table)
                 for key, value of result
                     if key == "modify"
                         value = new Date(value)
                     if key == "create"
                         value = new Date(value)
-                    $tr = $("<tr/>")
-                    $table.append($tr)
-                    $tr.append($("<td style='padding: 2px 5px;'>#{key}</td>"))
-                    $tr.append($("<td style='padding: 2px 5px;'>#{value}</td>"))
-                self.goon()
-            )
+                    $table.append $("<tr/>").append($("<td style='padding: 2px 5px;'>#{key}</td>")).append($("<td style='padding: 2px 5px;'>#{value}</td>"))
 
         read: (line, args, path)->
             self = @
@@ -280,46 +233,33 @@ $(()->
                 @outputError("Missing parameters")
                 return @goon()
             path = self.getOpreatePath(path)
-            Sysweb.fs.read(path).done((result)->
+            Sysweb.fs.read(path).done (result)=>
                 if(result.exists)
-                    $o = self.output()
-                    $o.append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
-                    self.goon()
-            )
+                    @output().append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
 
         write: (line, args, path)->
             self = @
             if(args.length < 2)
-                @outputError("Missing parameters")
-                return @goon()
+                return @outputError("Missing parameters")
             text = line.substr(line.indexOf(path) + path.length)
             path = self.getOpreatePath(path)
-            Sysweb.fs.write(path, text).done((result)->
+            Sysweb.fs.write(path, text).done (result)->
                 if(result.exists)
-                    $o = self.output()
-                    $o.append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
-                    self.goon()
-            )
+                    @output().append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
 
         append: (line, args, path)->
             self = @
             if(args.length < 2)
-                @output(line.replace("echo", "").trim())
-                return @goon()
+                return @output(line.replace("echo", "").trim())
             text = line.substr(line.indexOf(path) + path.length)
             path = self.getOpreatePath(path)
-            Sysweb.fs.append(path, text).done((result)->
+            Sysweb.fs.append(path, text).done (result)->
                 if(result.exists)
-                    $o = self.output()
-                    $o.append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
-                    self.goon()
-            )
+                    @output().append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
 
         echo: (line, args)->
-            self = @
             if(args.length < 3 || args[args.length - 2] != ">>")
-                @output(line.replace("echo", "").trim())
-                return @goon()
+                return @output(line.replace("echo", "").trim())
 
             path = @getOpreatePath(args[args.length - 1])
             text = line.substr(5, line.lastIndexOf(">>") - 5).trim()
@@ -327,174 +267,125 @@ $(()->
                 text = text.substr(1)
             if(text.lastIndexOf("\"") == text.length - 1)
                 text = text.substr(0, text.length - 1)
-
-            Sysweb.fs.echo(path, text).done((result)->
+            Sysweb.fs.echo(path, text).done (result)=>
                 if(result.exists)
-                    $o = self.output()
-                    $o.append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
-                    self.goon()
-            )
+                    @output().append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
 
         mkdir: (line, args, path = args[0] || "")->
             self = @
             path = self.getOpreatePath(path)
-            Sysweb.fs.mkdir(path).done((result)->
+            Sysweb.fs.mkdir(path).done (result)->
                 if(!result.error)
                     self.goon()
-            )
 
         rm: (line, args, path)->
-            self = @
-            path = self.getOpreatePath(line.substr(line.indexOf(" ")).trim())
-            Sysweb.fs.rm(path).done((result)->
-                if(!result.exists)
-                    self.goon()
-            )
+            path = @getOpreatePath(path)
+            Sysweb.fs.rm(path).done (result)=>
+                if !result.exists
+                    @outputError("cp failed!")
+                else
+                    @output("mv success!")
 
-        cp: (line, args, source = args[0], dest = args[1])->
-            self = @
+        cp: (line, args, source, dest)->
             if (args.length < 2)
-                $o = self.output()
-                $o.append($("<span style='padding: 5px 20px; color: #f66;'>Args error</span>"))
-                self.goon()
-                return
-            source = self.getOpreatePath(source)
-            dest = self.getOpreatePath(dest)
-            Sysweb.fs.cp(source, dest).done((result)->
-                if(!result.error)
-                    self.goon()
-            )
+                return @output().append($("<span style='padding: 5px 20px; color: #f66;'>Args error</span>"))
+            source = @getOpreatePath(source)
+            dest = @getOpreatePath(dest)
+            Sysweb.fs.cp(source, dest).done (result)=>
+                if result.error
+                    @outputError("cp failed!")
+                else
+                    @output("cp success!")
 
         mv: (line, args, source = args[0], dest = args[1])->
-            self = @
             if (!source || !dest)
-                self.outputError("arguments provided is not enough")
-                self.goon()
-                return
-            source = self.getOpreatePath(source)
-            dest = self.getOpreatePath(dest)
-            Sysweb.fs.mv(source, dest).done((result)->
-                if(!result.error)
-                    self.goon()
-            )
+                return @outputError("arguments provided is not enough")
+            source = @getOpreatePath(source)
+            dest = @getOpreatePath(dest)
+            Sysweb.fs.mv(source, dest).done (result)=>
+                if result.error
+                    @outputError("mv failed!")
+                else
+                    @output("mv success!")
 
         head: (line, args, path, start, stop)->
-            self = @
-            Sysweb.fs.head(self.getOpreatePath(path), start, stop).done((result)->
+            Sysweb.fs.head(@getOpreatePath(path), start, stop).done (result)=>
                 if(result.text)
-                    $o = self.output()
-                    $o.append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
-                    self.goon()
-            )
+                    @output().append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
 
         tail: (line, args, path = args[0], start, stop)->
-            self = @
-            Sysweb.fs.tail(self.getOpreatePath(path), start, stop).done((result)->
+            Sysweb.fs.tail(@getOpreatePath(path), start, stop).done (result)=>
                 if(result.text)
-                    $o = self.output()
-                    $o.append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
-                self.goon()
-            )
+                    @output().append($("<pre style='padding: 5px 20px; color: #fff;'>#{$("<div/>").text(result.text).html()}</pre>"))
+                else
+                    @outputError("Tail failed!")
 
-    terminal = Terminal.getInstance()
+    Terminal.getInstance()
 
     # Login
     Terminal.addCommandFunction "login", ()->
-        self = @
         email = @getParam("-e")
         password = @getParam("-p")
         if(email && password)
-            Sysweb.User.login({
-                email: email
-                password: password
-            }).done((result)->
+            Sysweb.User.login({email: email, password: password}).done (result)=>
                 if(result.user)
                     Sysweb.User.currentUser = result.user
                     Terminal.getInstance().currentDir = "/"
-                    $o = terminal.output()
-                    $o.append($("<span style='padding: 5px 20px; color: #6f6;'>has login as [#{result.user.username}]</span>"))
+                    @output().append($("<span style='padding: 5px 20px; color: #6f6;'>has login as [#{result.user.username}]</span>"))
                 else
-                    self.outputError("Login Failed")
-                terminal.goon()
-            )
+                    @outputError("Login Failed")
         else
-            terminal.outputError("Email and password are needed.")
-            @goon()
+            @outputError("Email and password are needed.")
 
     Terminal.addCommandFunction "logout", ()->
         $.get("/logout").done(=>
-            window.location.reload()
-        ).fail(=>
-            @goon()
-        )
+            window.location.reload()).fail(=>
+            @outputError("Log out Error"))
 
     # Register
     Terminal.addCommandFunction "register", (line, args)->
-        self = @
         email = @getParam("-e")
         password = @getParam("-p")
-        Sysweb.User.once "registerfailed", ->
-            self.goon()
         if(email && password)
-            Sysweb.User.register({
-                email: email
-                password: password
-            }).done((result)->
+            Sysweb.User.register({email: email, password: password }).done (result)=>
                 if (result.error)
-                    terminal.outputError(result.message)
+                    @outputError(result.message)
                 else
-                    terminal.output("We have send you an email which to active your account.")
-            )
+                    @output("We have send you an email which to active your account.")
         else
-            terminal.outputError('Email and password are needed.')
-        @goon()
+            @outputError('Email and password are needed.')
 
-    Terminal.addCommandFunction "help", (line, args)->
+    Terminal.addCommandFunction "help", ()->
         window.open("https://github.com/synee/sysweb_server_flask/blob/master/static/README.md", "_blank")
         @goon()
 
     Terminal.addCommandFunction "export", (line, args, path, option)->
-        self = @
         if !path
-            @outputError("Missing path")
-            return
+            return @outputError("Missing path")
+
         path = @getOpreatePath(path)
-
         if option == "delete"
-            Sysweb.Env.deleteExport(path, =>
-                @output("Export delete success")
-                @goon())
-            return
+            return Sysweb.Env.deleteExport(path, =>
+                @output("Export delete success"))
 
-        Sysweb.fs.stat(path).done((result)=>
+        Sysweb.fs.stat(path).done (result)=>
             if result.absolutePath
                 Sysweb.Env.export(result.absolutePath, =>
-                    @output("Export success")
-                    @goon())
-            else
-                @outputError("No Such File")
-                @goon()
-        )
+                    @output("Export success"))
+            else @outputError("No Such File")
 
     Terminal.addCommandFunction "commands", (line, args) ->
         $ul = $("<ul style='list-style-type: none; display: table;'/>")
         @output($ul)
-        for command in Terminal.commands
-            $ul.append($("<li style='float: left; padding-right: 20px;'>#{command}</li>"))
-        @goon()
-
+        $ul.append($("<li style='float: left; padding-right: 20px;'>#{command}</li>")) for command in Terminal.commandNames
 
     Terminal.addCommandFunction "publish", (line, args, path, as, version = 0) ->
         Sysweb.Api.publish(path, as, version)
         @outputError("Not Finished")
-        @goon()
-
 
     Terminal.addCommandFunction "install", (line, args, app, version = 0) ->
         Sysweb.Api.install(app, version)
         @outputError("Not Finished")
-        @goon()
-
 )
 
 
