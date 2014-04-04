@@ -21,32 +21,26 @@
       $: function(selector) {
         return this.$el.find.apply(this.$el, arguments);
       },
+      atInput: function(index) {
+        var value;
+        if (index < 0) {
+          index = 0;
+        }
+        if (index >= this.hasInputs.length) {
+          index = this.hasInputs.length;
+        }
+        value = this.hasInputs[index] || '';
+        this.$input.val(value);
+        this.$input.focus();
+        this.$input[0].selectionEnd = this.$input.val().length;
+        this.currentInput = index;
+        return false;
+      },
       prevInput: function() {
-        this.currentInput = this.currentInput - 1;
-        if (this.currentInput < 0) {
-          this.currentInput = 0;
-        }
-        if (this.hasInputs[this.currentInput]) {
-          this.$input.val(this.hasInputs[this.currentInput]);
-          this.$input.focus();
-          this.$input[0].selectionEnd = this.$input.val().length;
-          return false;
-        } else {
-          this.currentInput = this.hasInputs.length;
-          return this.$input.val("");
-        }
+        return this.atInput(this.currentInput - 1);
       },
       nextInput: function() {
-        this.currentInput = this.currentInput + 1;
-        if (this.hasInputs[this.currentInput] === void 0) {
-          this.$input.val(this.hasInputs[this.currentInput]);
-          this.$input.focus();
-          this.$input[0].selectionEnd = this.$input.val().length;
-          return false;
-        } else {
-          this.currentInput = this.hasInputs.length;
-          return this.$input.val("");
-        }
+        return this.atInput(this.currentInput + 1);
       },
       outputEl: function(message) {
         return $("<div class='output_line' style='font-family: monospace; font-size: 12px; padding: 2px 0;'></div>").append(message);
@@ -75,8 +69,10 @@
         $o = this.output();
         $o.append($("<span style='padding: 5px 5px 5px 0px; color: #f8c;'>" + (this.$('#terminal_path').text()) + "</span>"));
         $o.append($("<pre style='padding: 3px 5px 3px 2px; display: inline;'>" + ($("<div/>").text(line).html()) + "</pre>"));
-        if (this.$input.val()) {
-          this.hasInputs[this.hasInputs.length] = this.$input.val();
+        if (line) {
+          this.hasInputs[this.hasInputs.length] = line;
+        } else {
+          return this.goon();
         }
         this.$input.val("").hide();
         this.$("#terminal_path").text("");
@@ -99,15 +95,15 @@
         argArr = line.split(/\s+/);
         fnName = argArr[0];
         fn = Terminal.commandFunctions[fnName];
-        if (fn(fn.apply(this, [line, argArr.slice(1)].concat(argArr.slice(1))))) {
-
+        if (fn) {
+          return fn.apply(this, [line, argArr.slice(1)].concat(argArr.slice(1)));
         } else {
           return this.output().append($("<span style='padding: 5px 20px; color: #f66;'>No Such command: \" " + fnName + " \"</span>"));
         }
       },
       goon: function() {
         this.$("#terminal_path").text("Sysweb:" + this.currentDir + "  " + (Sysweb.User.currentUser && Sysweb.User.currentUser.username ? Sysweb.User.currentUser.username : 'Anonymous') + "$");
-        this.$input.val("").show().focus();
+        this.$input.val("").show().focus().width(this.$("#terminal_input").width() - this.$("#terminal_path").width() - 10);
         this.$el.animate({
           scrollTop: this.$("#terminal_output").height()
         }, 50);
@@ -115,6 +111,9 @@
       },
       getOpreatePath: function(path) {
         var cDir;
+        if (path == null) {
+          path = path || "";
+        }
         cDir = this.currentDir.substr(0, this.currentDir.lastIndexOf("/"));
         while (path.indexOf("//") >= 0) {
           path = path.replace("//", "/");
@@ -182,7 +181,9 @@
           return _this.keyBoardListener(e);
         });
         Sysweb.User.on("logined", this.goon, this);
-        Sysweb.User.on("forbidden", this.outputError("Command forbidden, you have to log in."), this);
+        Sysweb.User.on("forbidden", function() {
+          return _this.outputError("Command forbidden, you have to log in.");
+        });
         return Sysweb.fs.on("fserror", function(result) {
           return _this.outputError(result.message);
         });
@@ -245,13 +246,15 @@
         return Sysweb.fs.ls(this.getOpreatePath(path)).done(function(result) {
           var $o, item, _i, _len, _ref, _results;
           $o = _this.output();
-          _ref = result.list;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            item = _ref[_i];
-            _results.push($o.append($("<span style='padding: 5px 20px; color: " + (item.file ? "#f99" : "#99f") + "'>" + item.name + "</span>")));
+          if (result && result.list) {
+            _ref = result.list;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              item = _ref[_i];
+              _results.push($o.append($("<span style='padding: 5px 20px; color: " + (item.file ? "#f99" : "#99f") + "'>" + item.name + "</span>")));
+            }
+            return _results;
           }
-          return _results;
         });
       },
       touch: function(line, args, path) {
@@ -542,7 +545,3 @@
   });
 
 }).call(this);
-
-/*
-//@ sourceMappingURL=terminal.map
-*/

@@ -23,31 +23,26 @@ $(()->
         $: (selector)->
             @$el.find.apply(@$el, arguments)
 
+
+        atInput: (index)->
+            if index < 0
+                index = 0
+            if index >= @hasInputs.length
+                index = @hasInputs.length
+            value = @hasInputs[index] || ''
+            @$input.val(value)
+            @$input.focus()
+            @$input[0].selectionEnd = @$input.val().length
+            @currentInput = index
+            return false
+
     # 前一个输入
         prevInput: ->
-            @currentInput = @currentInput - 1
-            if @currentInput < 0
-                @currentInput = 0
-            if(@hasInputs[@currentInput])
-                @$input.val(@hasInputs[@currentInput])
-                @$input.focus()
-                @$input[0].selectionEnd = @$input.val().length
-                return false
-            else
-                @currentInput = @hasInputs.length
-                @$input.val("")
+            @atInput(@currentInput - 1)
 
     # 后一个输入
         nextInput: ->
-            @currentInput = @currentInput + 1
-            if(@hasInputs[@currentInput] == undefined)
-                @$input.val(@hasInputs[@currentInput])
-                @$input.focus()
-                @$input[0].selectionEnd = @$input.val().length
-                return false
-            else
-                @currentInput = @hasInputs.length
-                @$input.val("")
+            @atInput(@currentInput + 1)
 
     # 输出 Element
         outputEl: (message) ->
@@ -69,8 +64,10 @@ $(()->
             $o = @output()
             $o.append($("<span style='padding: 5px 5px 5px 0px; color: #f8c;'>#{@$('#terminal_path').text()}</span>"))
             $o.append($("<pre style='padding: 3px 5px 3px 2px; display: inline;'>#{$("<div/>").text(line).html()}</pre>"))
-            if @$input.val()
-                @hasInputs[@hasInputs.length] = @$input.val()
+            if line
+                @hasInputs[@hasInputs.length] = line
+            else
+                return @goon()
             @$input.val("").hide()
             @$("#terminal_path").text("")
             if (!line.trim())
@@ -90,17 +87,19 @@ $(()->
             argArr = line.split(/\s+/)
             fnName = argArr[0]
             fn = (Terminal.commandFunctions)[fnName]
-            if (fn) fn.apply(@, [line, argArr.slice(1)].concat(argArr.slice(1)))
-            else @output().append($("""<span style='padding: 5px 20px; color: #f66;'>No Such command: \" #{fnName} \"</span>"""))
+            if (fn)
+                fn.apply(@, [line, argArr.slice(1)].concat(argArr.slice(1)))
+            else
+                @output().append($("""<span style='padding: 5px 20px; color: #f66;'>No Such command: \" #{fnName} \"</span>"""))
 
     # 命令结束， 继续
         goon: ()->
             @$("#terminal_path").text("Sysweb:#{@currentDir}  #{if Sysweb.User.currentUser && Sysweb.User.currentUser.username then Sysweb.User.currentUser.username else 'Anonymous'}$")
-            @$input.val("").show().focus()
+            @$input.val("").show().focus().width(@$("#terminal_input").width() - @$("#terminal_path").width() - 10)
             @$el.animate({ scrollTop: @$("#terminal_output").height()}, 50)
             @currentInput = @hasInputs.length
 
-        getOpreatePath: (path)->
+        getOpreatePath: (path = path || "")->
             cDir = @currentDir.substr(0, @currentDir.lastIndexOf("/"))
             path = path.replace("//", "/") while path.indexOf("//") >= 0
             if (path.indexOf("..") == 0)
@@ -149,7 +148,8 @@ $(()->
             @$input.on("keydown", (e)=>
                 @keyBoardListener(e))
             Sysweb.User.on("logined", @goon, @)
-            Sysweb.User.on("forbidden", @outputError("Command forbidden, you have to log in."), @)
+            Sysweb.User.on("forbidden", =>
+                @outputError("Command forbidden, you have to log in."))
             Sysweb.fs.on("fserror", (result)=>
                 @outputError(result.message))
 
@@ -200,7 +200,7 @@ $(()->
         ls: (line, args, path = ".")->
             Sysweb.fs.ls(@getOpreatePath(path)).done (result)=>
                 $o = @output()
-                $o.append($("<span style='padding: 5px 20px; color: #{if item.file then "#f99" else "#99f"}'>#{item.name}</span>")) for item in result.list
+                ($o.append($("<span style='padding: 5px 20px; color: #{if item.file then "#f99" else "#99f"}'>#{item.name}</span>")) for item in result.list) if result && result.list
 
         touch: (line, args, path = ".")->
             if(args.length < 1)
