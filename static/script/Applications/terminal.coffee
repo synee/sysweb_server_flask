@@ -149,8 +149,7 @@ $(()->
             @$input.on("keydown", (e)=>
                 @keyBoardListener(e))
             Sysweb.User.on("logined", @goon, @)
-            Sysweb.User.on("forbidden", =>
-                @outputError("Command forbidden, you have to log in."))
+            Sysweb.User.on("forbidden", @outputError("Command forbidden, you have to log in."), @)
             Sysweb.fs.on("fserror", (result)=>
                 @outputError(result.message))
 

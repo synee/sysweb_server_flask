@@ -1,6 +1,7 @@
 from functools import wraps
 import os, shutil
 from flask import request, session, jsonify
+from route import render_error
 from sysweb_server_flask import app
 
 BASE_FILE = ("/__env__.json",
@@ -12,10 +13,7 @@ def login_required():
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if session.get("current_user") is None or not session.get("current_user")["enable"]:
-                return jsonify(**{
-                    "error": True,
-                    "message": "login required."
-                })
+                return render_error("login required.")
             return f(*args, **kwargs)
 
         return decorated_function
@@ -61,28 +59,16 @@ def check_path(exists=[], not_exists=[], is_file=[], is_dir=[]):
         def wrapper(*args, **kwargs):
             for f in exists:
                 if not os.path.exists(get_path(f)):
-                    return jsonify(**{
-                        "error": True,
-                        "message": "%s is not exists" % get_abs_path(get_path(f))
-                    })
+                    return render_error("%s is not exists" % get_abs_path(get_path(f)))
             for f in not_exists:
                 if os.path.exists(get_path(f)):
-                    return jsonify(**{
-                        "error": True,
-                        "message": "%s is exists" % get_abs_path(get_path(f))
-                    })
+                    return render_error("%s is exists" % get_abs_path(get_path(f)))
             for f in is_file:
                 if not os.path.isfile(get_path(f)):
-                    return jsonify(**{
-                        "error": True,
-                        "message": "%s is not a file" % get_abs_path(get_path(f))
-                    })
+                    return render_error("%s is not a file" % get_abs_path(get_path(f)))
             for f in is_dir:
                 if not os.path.isdir(get_path(f)):
-                    return jsonify(**{
-                        "error": True,
-                        "message": "%s is not a directory" % get_abs_path(get_path(f))
-                    })
+                    return render_error("%s is not a directory" % get_abs_path(get_path(f)))
             return func(*args, **kwargs)
 
         return wrapper
@@ -179,17 +165,13 @@ def mkdir():
 @check_path(exists=["path"])
 def rm():
     if get_abs_path(get_path()) in BASE_FILE:
-        return jsonify(**{
-            "error": True,
-            "message": "%s cannot be removed." % (get_abs_path(get_path()), )
-        })
+        return render_error("%s cannot be removed." % (get_abs_path(get_path()), ))
     if os.path.isdir(get_path()):
         os.removedirs(get_path())
     elif os.path.isfile(get_path()):
         os.remove(get_path())
     else:
         os.remove(get_path())
-
     return jsonify(**file_2_info(get_path()))
 
 
@@ -199,10 +181,7 @@ def rm():
 def cp():
     abs_parent_dir = (session["root"] + get_parent_abs_path(get_path("dest"))).replace("//", "/")
     if os.path.isfile(abs_parent_dir[:(len(abs_parent_dir) - 1)]):
-        return jsonify(**{
-            "error": True,
-            "message": "%s is a file" % get_abs_path(abs_parent_dir)
-        })
+        return render_error("%s is a file" % get_abs_path(abs_parent_dir))
     if not os.path.isdir(abs_parent_dir):
         os.mkdir(abs_parent_dir)
     if os.path.isdir(get_path("source")):
@@ -221,11 +200,7 @@ def cp():
 @check_path(exists=["source"], not_exists=["dest"])
 def mv():
     if get_abs_path(get_path("source")) in BASE_FILE:
-        return jsonify(**{
-            "error": True,
-            "message": "%s cannot be removed." % (get_abs_path(get_path()), )
-        })
-
+        return render_error("%s cannot be removed." % (get_abs_path(get_path()), ))
     shutil.move(get_path("source"), get_path("dest"))
     return jsonify(**{
         "source": file_2_info(get_path("source")),
@@ -239,7 +214,7 @@ def mv():
 def head():
     f = open(get_path())
     f_info = file_2_info(get_path())
-    f_info["text"] = "".join([f.readline() for i in range(0, 10)])
+    f_info["text"] = "\n".join([f.readline() for i in range(0, 10)])
     return jsonify(**f_info)
 
 
@@ -249,7 +224,7 @@ def head():
 def tail():
     f = open(get_path())
     f_info = file_2_info(get_path())
-    f_info["text"] = "".join(f.readlines()[-10:])
+    f_info["text"] = "\n".join(f.readlines()[-10:])
     return jsonify(**f_info)
 
 

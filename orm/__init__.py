@@ -149,15 +149,15 @@ class Model:
             result = execute_update(sql)
             if result:
                 self.__dict__ = self.__class__.find_one(**self.__dict__).__dict__
-            return result
+            return self
         else:
             cols = ", ".join(self.__dict__.keys())
             vals = ", ".join([gen_insert_val(self.__dict__[k]) for k in self.__dict__.keys()])
-            sql = "INSERT INTO %s (%s) values (%s)" % (self.Meta.table, cols, vals)
+            sql = "INSERT INTO {0:s} ({1:s}) values ({2:s})".format(self.Meta.table, cols, vals)
             result = execute_update(sql)
             if result:
                 self.__dict__ = self.__class__.find_one(**self.__dict__).__dict__
-            return result
+            return self
 
     def delete(self):
         pass
@@ -169,7 +169,7 @@ class Model:
         if table is None:
             raise NoTableError
         primary = meta.primary
-        sql = "SELECT * FROM %s AS t WHERE t.%s=%d" % (table, primary, one_id)
+        sql = "SELECT * FROM {0:s} AS t WHERE t.{1:s}={2:d}".format(table, primary, one_id)
         print(sql)
         result = execute(sql)
         if len(result) > 0:

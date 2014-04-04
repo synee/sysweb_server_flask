@@ -563,35 +563,31 @@
           });
         },
         login: function(params) {
-          var self;
+          var _this = this;
           if (params == null) {
             params = {};
           }
-          " @parems email password ";
-          self = this;
           return $.post("/login", params).done(function(result) {
             if (!result.error && result.user) {
-              self.currentUser = result.user;
-              self.trigger("logined");
+              _this.currentUser = result.user;
+              _this.trigger("logined");
               return window.location.reload();
             } else {
-              return self.trigger("loginfailed");
+              return _this.trigger("loginfailed");
             }
           });
         },
         register: function(params) {
-          var self;
+          var _this = this;
           if (params == null) {
             params = {};
           }
-          " @parems email password ";
-          self = this;
           return $.post("/register", params).done(function(result) {
             if (!result.error && result.user) {
-              self.currentUser = result.user;
-              return self.trigger("logined");
+              _this.currentUser = result.user;
+              return _this.trigger("logined");
             } else {
-              return self.trigger("registerfailed");
+              return _this.trigger("registerfailed");
             }
           });
         },

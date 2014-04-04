@@ -182,9 +182,7 @@
           return _this.keyBoardListener(e);
         });
         Sysweb.User.on("logined", this.goon, this);
-        Sysweb.User.on("forbidden", function() {
-          return _this.outputError("Command forbidden, you have to log in.");
-        });
+        Sysweb.User.on("forbidden", this.outputError("Command forbidden, you have to log in."), this);
         return Sysweb.fs.on("fserror", function(result) {
           return _this.outputError(result.message);
         });
