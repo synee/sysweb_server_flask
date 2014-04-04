@@ -227,7 +227,7 @@
       cd: function(line, args, path) {
         var _this = this;
         if (path == null) {
-          path = path || '.';
+          path = '.';
         }
         path = this.getOpreatePath(path) + "/";
         return Sysweb.fs.cd(path).done(function(result) {
@@ -240,7 +240,7 @@
       ls: function(line, args, path) {
         var _this = this;
         if (path == null) {
-          path = path || ".";
+          path = ".";
         }
         return Sysweb.fs.ls(this.getOpreatePath(path)).done(function(result) {
           var $o, item, _i, _len, _ref, _results;

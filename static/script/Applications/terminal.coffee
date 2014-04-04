@@ -190,14 +190,14 @@ $(()->
             @output(@currentDir)
             @goon()
 
-        cd: (line, args, path = path || '.')->
+        cd: (line, args, path = '.')->
             path = @getOpreatePath(path) + "/"
             Sysweb.fs.cd(path).done (result)=>
                 if(result.directory)
                     @currentDir = path
                 @goon()
 
-        ls: (line, args, path = path || ".")->
+        ls: (line, args, path = ".")->
             Sysweb.fs.ls(@getOpreatePath(path)).done (result)=>
                 $o = @output()
                 $o.append($("<span style='padding: 5px 20px; color: #{if item.file then "#f99" else "#99f"}'>#{item.name}</span>")) for item in result.list
