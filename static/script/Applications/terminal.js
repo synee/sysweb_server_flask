@@ -225,50 +225,47 @@
         return this.goon();
       },
       cd: function(line, args, path) {
-        var self;
+        var _this = this;
         if (path == null) {
           path = path || '.';
         }
-        self = this;
         path = this.getOpreatePath(path) + "/";
         return Sysweb.fs.cd(path).done(function(result) {
           if (result.directory) {
-            self.currentDir = path;
+            _this.currentDir = path;
           }
-          return self.goon();
+          return _this.goon();
         });
       },
       ls: function(line, args, path) {
-        var self;
+        var _this = this;
         if (path == null) {
           path = path || ".";
         }
-        self = this;
-        return Sysweb.fs.ls(self.getOpreatePath(path)).done(function(result) {
-          var $o, item, _i, _len, _ref;
-          $o = self.output();
+        return Sysweb.fs.ls(this.getOpreatePath(path)).done(function(result) {
+          var $o, item, _i, _len, _ref, _results;
+          $o = _this.output();
           _ref = result.list;
+          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             item = _ref[_i];
-            $o.append($("<span style='padding: 5px 20px; color: " + (item.file ? "#f99" : "#99f") + "'>" + item.name + "</span>"));
+            _results.push($o.append($("<span style='padding: 5px 20px; color: " + (item.file ? "#f99" : "#99f") + "'>" + item.name + "</span>")));
           }
-          return self.goon();
+          return _results;
         });
       },
       touch: function(line, args, path) {
-        var self;
+        var _this = this;
         if (path == null) {
-          path = path || ".";
+          path = ".";
         }
-        self = this;
         if (args.length < 1) {
-          this.outputError("Missing parameters");
-          return this.goon();
+          return this.outputError("Missing parameters");
         }
-        path = self.getOpreatePath(path);
+        path = this.getOpreatePath(path);
         return Sysweb.fs.touch(path).done(function(result) {
           if (result.exists) {
-            return self.goon();
+            return _this.goon();
           }
         });
       },

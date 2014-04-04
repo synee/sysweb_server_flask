@@ -191,29 +191,24 @@ $(()->
             @goon()
 
         cd: (line, args, path = path || '.')->
-            self = @
             path = @getOpreatePath(path) + "/"
-            Sysweb.fs.cd(path).done (result)->
+            Sysweb.fs.cd(path).done (result)=>
                 if(result.directory)
-                    self.currentDir = path
-                self.goon()
+                    @currentDir = path
+                @goon()
 
         ls: (line, args, path = path || ".")->
-            self = @
-            Sysweb.fs.ls(self.getOpreatePath(path)).done (result)->
-                $o = self.output()
+            Sysweb.fs.ls(@getOpreatePath(path)).done (result)=>
+                $o = @output()
                 $o.append($("<span style='padding: 5px 20px; color: #{if item.file then "#f99" else "#99f"}'>#{item.name}</span>")) for item in result.list
-                self.goon()
 
-        touch: (line, args, path = path || ".")->
-            self = @
+        touch: (line, args, path = ".")->
             if(args.length < 1)
-                @outputError("Missing parameters")
-                return @goon()
-            path = self.getOpreatePath(path)
-            Sysweb.fs.touch(path).done (result)->
+                return @outputError("Missing parameters")
+            path = @getOpreatePath(path)
+            Sysweb.fs.touch(path).done (result)=>
                 if(result.exists)
-                    self.goon()
+                    @goon()
 
         stat: (line, args, path = @currentDir)->
             Sysweb.fs.stat(@getOpreatePath(path)).done (result)=>
